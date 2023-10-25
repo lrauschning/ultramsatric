@@ -28,8 +28,3 @@ class MSA:
             alns[curid] = seq
 
         return MSA(alns)
-
-
-
-   # higher-order function that takes a function from the distance module to turn a MSA into an induced distance matrix
-   def to_distance(distfun) -> np.ndarray:
