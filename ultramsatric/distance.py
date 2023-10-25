@@ -15,7 +15,7 @@ def linear(n:int) -> float:
 def affine(n:int) -> float:
     return 3 + 2*n
 
-def alignment_distance(ref: List[chr], alt: List[chr], dfun:Callable[[chr, chr], float] = identity, gapcost:Callable[[int], float] = linear) -> float:
+def alignment_distance(ref: List[chr], alt: List[chr], dfun: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
     if not len(ref) == len(alt):
         raise ValueError("The sequences must have equal length!")
 
