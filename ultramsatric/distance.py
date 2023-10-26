@@ -1,6 +1,7 @@
 #!/bin/python3
 from typing import List, Callable, Dict
 import numpy as np
+from msa import MSA
 
 
 def identity(ref:chr, alt:chr) -> float:
@@ -40,7 +41,7 @@ def alignment_distance(ref: List[chr], alt: List[chr], dfun: Callable[[chr, chr]
                 dist += gapcost(gaplen)
                 gaplen = 0
                 continue
-        
+
             ## check for deletion
             while altch == '-':
                 if refch == '-': # ignore gaps in both sequences
@@ -84,9 +85,10 @@ class DistMat:
     The associated _index method will return the 1-dimensional index in the linearized representation corresponding to the 2-dimensional index in the distance matrix.
     The dimension of the distance matrix is stored at `self.n`.
     """
-    n: int # number of sequences stored
-    idmap: Dict[str, int] # map storing the index of each FASTA ID
-    _backing: np.ndarray # an upper triangle matrix lacking the diagonal, linearized to a 1D-Array
+    def __init__(self, n: int, idmap: Dict[str, int], backing: np.ndarray):
+        self.n = n # number of sequences stored
+        self.idmap = idmap # map storing the index of each FASTA ID
+        self._backing = backing # an upper triangle matrix lacking the diagonal, linearized to a 1D-Array
 
     def get(self, a:str, b:str) -> float:
         return self._get(self.idmap[a], self.idmap[b])
@@ -96,40 +98,42 @@ class DistMat:
             a, b = b, a
         elif a == b:
             return 0
-       return self._backing[self._index(a, b)]
+        return self._backing[self._index(a, b)]
 
-   def _index(self, a:int, b:int) -> int:
-       return DistMat.index(a, b, self.n)
+    def _index(self, a:int, b:int) -> int:
+        return DistMat.index(a, b, self.n)
 
-   def index(a:int, b:int, n:int) -> int:
+    @classmethod
+    def index(cls, a:int, b:int, n:int) -> int:
         if b < a: # ensure a <= b
             a, b = b, a
-       return (a * (a-1))/2 + a * (n - a) + (b - a - 1)
+        return (a * (a-1))//2 + a * (n - a) + (b - a - 1)
 
-   def to_full_matrix(self) -> np.ndarray:
+    def to_full_matrix(self) -> np.ndarray:
         ret = np.zeros([self.n, self.n], dtype=self._backing.dtype)
-        for i in range(n):
-            for j in range(n):
-                ret[(i, j)] = self._backing[self.index(i, j)]
+        for i in range(self.n):
+            for j in range(self.n):
+                ret[(i, j)] = self._backing[self._index(i, j)]
         return ret
 
-   def __repr__(self) -> str:
-       return str(self.to_full_matrix())
+    def __repr__(self) -> str:
+        return str(self.to_full_matrix())
 
-   def from_msa(m: MSA, distfun) -> DistMat:
+    @classmethod
+    def from_msa(cls, m: MSA, distfun):
         # init variables
         ids = sorted(m.alns.keys())
         n = len(ids)
         # stolen from https://stackoverflow.com/a/1679702
         idmap = dict(map(reversed, enumerate(ids)))
-        backing = np.ndarray(n*(n-1)/2, dtype=np.float32)
+        backing = np.ndarray(n*(n-1)//2, dtype=np.float32)
 
         # calculate pairwise distances
         for i in range(len(ids)):
             for j in range(i+1, len(ids)):
-                backing[index(i, j, n)] = distfun(msa.alns[i], msa.alns[j])
+                backing[DistMat.index(i, j, n)] = distfun(m.alns[ids[i]], m.alns[ids[j]])
 
-        return DistMat(n, idmap, backing)
+        return cls(n, idmap, backing)
 
 
 if __name__ == "__main__":
