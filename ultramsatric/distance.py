@@ -103,6 +103,14 @@ class DistMat:
     def _index(self, a:int, b:int) -> int:
         return DistMat.index(a, b, self.n)
 
+    def apply(self, fun):
+        """Takes a function taking as arguments the position and current value, and stores the result of applying that function at each position in the Distance Matrix.
+        """
+        for i in range(len(ids)):
+            for j in range(i+1, len(ids)):
+                self._backing[sevf._index(i, j)] = fun(i, j, self._get(i, j))
+
+
     @classmethod
     def index(cls, a:int, b:int, n:int) -> int:
         if b < a: # ensure a <= b
