@@ -13,10 +13,16 @@ def main():
     m = MSA.from_file(sys.argv[1])
     #print(m)
     d = DistMat.from_msa(m, distfun=alignment_distance)
+    print(d.idmap)
     print(d)
     d_upgma = UPGMA_matrix(d)
+    print(d_upgma.idmap)
     print(d_upgma)
-    print(d - d_upgma)
+    diff = d - d_upgma
+    print(diff)
+    print(diff.frobenius())
+    print(diff.abssum())
+
 
 
 if __name__ == "__main__":

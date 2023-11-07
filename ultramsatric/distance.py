@@ -4,6 +4,7 @@ import os
 import numpy as np
 from msa import MSA
 import dendropy
+import math
 
 
 def identity(ref:chr, alt:chr) -> float:
@@ -95,11 +96,13 @@ class DistMat:
     @classmethod
     def from_dendropy(cls, pdm: dendropy.PhylogeneticDistanceMatrix):
         n = len(pdm.taxon_namespace)
-        idmap = {str(t):id for id, t in enumerate(pdm.taxon_namespace)}
+        idmap = {str(t):id for id, t in enumerate(sorted(pdm.taxon_namespace))}
         backing = np.ndarray(n*(n-1)//2, dtype=np.float32)
-        for t in pdm.taxon_namespace:
-            for t2 in pdm.taxon_namespace:
-                backing[DistMat.index(idmap[str(t)], idmap[str(t2)], n)] = pdm.distance(t, t2)
+        for i in range(n):
+            for j in range(i+1, n):
+                t = pdm.taxon_namespace[i]
+                v = pdm.taxon_namespace[j]
+                backing[DistMat.index(idmap[str(t)], idmap[str(v)], n)] = pdm.distance(t, v)
 
         return cls(n, idmap, backing)
         
@@ -174,6 +177,13 @@ class DistMat:
         #if self.idmap != other.idmap:
         #    raise ValueError("Tried to subtract Matrices with different taxons!")
         return DistMat(self.n, self.idmap, self._backing - other._backing)
+
+    ## Implement a few Matrix norms
+    def abssum(self) -> float:
+        return np.sum(np.abs(self._backing))
+
+    def frobenius(self) -> float:
+        return math.sqrt(np.sum(self._backing**2))
 
 
 if __name__ == "__main__":
