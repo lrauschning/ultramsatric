@@ -1,7 +1,9 @@
 #!/bin/python3
 from typing import List, Callable, Dict
+import os
 import numpy as np
 from msa import MSA
+import dendropy
 
 
 def identity(ref:chr, alt:chr) -> float:
@@ -90,6 +92,18 @@ class DistMat:
         self.idmap = idmap # map storing the index of each FASTA ID
         self._backing = backing # an upper triangle matrix lacking the diagonal, linearized to a 1D-Array
 
+    @classmethod
+    def from_dendropy(cls, pdm: dendropy.PhylogeneticDistanceMatrix):
+        n = len(pdm.taxon_namespace)
+        idmap = {str(t):id for id, t in enumerate(pdm.taxon_namespace)}
+        backing = np.ndarray(n*(n-1)//2, dtype=np.float32)
+        for t in pdm.taxon_namespace:
+            for t2 in pdm.taxon_namespace:
+                backing[DistMat.index(idmap[str(t)], idmap[str(t2)], n)] = pdm.distance(t, t2)
+
+        return cls(n, idmap, backing)
+        
+
     def get(self, a:str, b:str) -> float:
         return self._get(self.idmap[a], self.idmap[b])
 
@@ -121,8 +135,18 @@ class DistMat:
         ret = np.zeros([self.n, self.n], dtype=self._backing.dtype)
         for i in range(self.n):
             for j in range(self.n):
-                ret[(i, j)] = self._backing[self._index(i, j)]
+                ret[(i, j)] = self._get(i, j)
         return ret
+
+    def to_dendropy_csv(self, path: os.PathLike, sep='\t', newline='\n'):
+        ids = sorted(self.idmap.keys())
+        with open(path, 'wt') as f:
+            f.write(sep.join([''] + ids))
+            f.write(newline)
+            for i in range(len(ids)):
+                f.write(sep.join([ids[i]] + [str(round(self._get(i, j), 2)) for j in range(len(ids))]))
+                f.write(newline)
+
 
     def __repr__(self) -> str:
         return str(self.to_full_matrix())
@@ -132,6 +156,7 @@ class DistMat:
         # init variables
         ids = sorted(m.alns.keys())
         n = len(ids)
+        print(n, ids)
         # stolen from https://stackoverflow.com/a/1679702
         idmap = dict(map(reversed, enumerate(ids)))
         backing = np.ndarray(n*(n-1)//2, dtype=np.float32)
@@ -142,6 +167,13 @@ class DistMat:
                 backing[DistMat.index(i, j, n)] = distfun(m.alns[ids[i]], m.alns[ids[j]])
 
         return cls(n, idmap, backing)
+
+    def __sub__ (self, other):
+        if self.n != other.n:
+            raise ValueError("Tried to subtract Matrices with different dimensions!")
+        #if self.idmap != other.idmap:
+        #    raise ValueError("Tried to subtract Matrices with different taxons!")
+        return DistMat(self.n, self.idmap, self._backing - other._backing)
 
 
 if __name__ == "__main__":

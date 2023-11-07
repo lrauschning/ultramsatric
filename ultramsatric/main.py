@@ -4,16 +4,19 @@ import sys
 
 from msa import MSA
 from distance import *
+from ultrametric import *
 
 def main():
-    print("Hello world!")
     #print(__version__)
 
     print(sys.argv)
     m = MSA.from_file(sys.argv[1])
-    print(m)
+    #print(m)
     d = DistMat.from_msa(m, distfun=alignment_distance)
     print(d)
+    d_upgma = UPGMA_matrix(d)
+    print(d_upgma)
+    print(d - d_upgma)
 
 
 if __name__ == "__main__":
