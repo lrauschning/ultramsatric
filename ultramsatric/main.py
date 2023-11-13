@@ -12,7 +12,7 @@ def main():
     print(sys.argv)
     m = MSA.from_file(sys.argv[1])
     #print(m)
-    d = DistMat.from_msa(m, distfun=alignment_distance)
+    d = DistMat.from_msa(m, distfun=scoredist)
     print(d.idmap)
     print(d)
     d_upgma = UPGMA_matrix(d)

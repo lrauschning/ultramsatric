@@ -5,14 +5,17 @@ import numpy as np
 from msa import MSA
 import dendropy
 import math
+import blosum as bl
+import itertools
+
+BLOSUM = bl.BLOSUM(62)
 
 
 def identity(ref:chr, alt:chr) -> float:
     return 1 if ref != alt else 0
 
 def blosum(ref:chr, alt:chr) -> float:
-    pass
-#blosum = #blosum matrix as np.ndarray
+    return BLOSUM[ref][alt]
 
 def linear(n:int) -> float:
     return 3*n
@@ -20,7 +23,13 @@ def linear(n:int) -> float:
 def affine(n:int) -> float:
     return 3 + 2*n
 
-def alignment_distance(ref: List[chr], alt: List[chr], dfun: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
+def no_gaps(n:int) -> float:
+    return 0.0
+
+def alignment_distance(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
+    """This function calculates the alignment distance between `ref` and `alt`, using the specified substitution model `subs` and the gapcost function `gapcost`.
+    :returns: Alignment distance.
+    """
     if not len(ref) == len(alt):
         raise ValueError("The sequences must have equal length!")
 
@@ -59,8 +68,7 @@ def alignment_distance(ref: List[chr], alt: List[chr], dfun: Callable[[chr, chr]
                 continue
 
             ## must be match
-            if refch != altch:
-                dist += dfun(refch, altch)
+            dist += subs(refch, altch)
 
             ## compare the next positions
             refch = next(refit)
@@ -69,10 +77,38 @@ def alignment_distance(ref: List[chr], alt: List[chr], dfun: Callable[[chr, chr]
         # one or both sequences have ended; treat the rest as a gap
         reflen = len([x for x in refit])
         altlen = len([x for x in altit])
-        dist += gapcost(reflen + altlen + gaplen)
+        if reflen + altlen + gaplen > 0:
+            dist += gapcost(reflen + altlen + gaplen)
 
     return dist
 
+def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
+    """Implements the Scoredist protein distance function, as described in https://doi.org/10.1186/1471-2105-6-108.
+    Uses the BLOSUM62 matrix and no gap penalty by default.
+    The BLOSUM matrix can be set as the `blo` parameter.
+    If `gaps` is set to `True`, it uses an affine gap penalty (not recommended in the paper).
+    :returns: Scoredist distance between `ref` and `alt`.
+    """
+    c = 1.3370 # from the paper
+
+    BLOSUM = bl.BLOSUM(blo)
+
+    # get expected value of substitution matrix
+    aas = [x for x in BLOSUM][:-5] # remove values coding for unknown AAs
+    ev = -1 #sum(map(lambda x: BLOSUM[x[0]][x[1]],
+        #itertools.product(aas, aas))) / (len(aas)**2)
+
+    l = max(len(ref), len(alt)) # get alignment length
+
+    alndist = alignment_distance(ref, alt, subs=blosum, gapcost= affine if gaps else no_gaps)
+    normdist = max(1, alndist - l*ev) # normalize by sequence length, enforce distance >= 1 as a pseudocount in case of above-random dissimilarity
+    
+    lim = (alignment_distance(ref, ref, subs=blosum, gapcost=None) +
+           alignment_distance(alt, alt, subs=blosum, gapcost=None)) / 2 # there shouldn't be any gaps aligning a sequence to itself, so do not set gapcost
+    normlim = max(1, lim - l*ev) # pseudocount again
+    #print(l, ev, alndist, normdist, lim, normlim)
+    
+    return -c*math.log(normdist / normlim)*100 # logtransform, scale and return
 
 class DistMat:
     """Class representing a distance matrix.
@@ -167,6 +203,7 @@ class DistMat:
         # calculate pairwise distances
         for i in range(len(ids)):
             for j in range(i+1, len(ids)):
+                #print("comparing", ids[i], ids[j])
                 backing[DistMat.index(i, j, n)] = distfun(m.alns[ids[i]], m.alns[ids[j]])
 
         return cls(n, idmap, backing)
