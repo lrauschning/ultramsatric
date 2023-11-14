@@ -222,6 +222,11 @@ class DistMat:
     def frobenius(self) -> float:
         return math.sqrt(np.sum(self._backing**2))
 
+    def norm_frobenius(self) -> float:
+        return self.frobenius()/len(self._backing)
+
+    def absavg(self) -> float:
+        return self.abssum()/len(self._backing)
 
 if __name__ == "__main__":
     import sys

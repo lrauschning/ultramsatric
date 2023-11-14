@@ -20,8 +20,8 @@ def main():
     print(d_upgma)
     diff = d - d_upgma
     print(diff)
-    print(diff.frobenius())
-    print(diff.abssum())
+    print(diff.norm_frobenius())
+    print(diff.absavg())
 
 
 
