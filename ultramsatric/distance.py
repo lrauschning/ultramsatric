@@ -10,6 +10,12 @@ import itertools
 
 BLOSUM = bl.BLOSUM(62)
 
+AA_FREQS = {'A': 8.76, 'R': 5.78, 'N': 3.93, 'D': 5.49, 'C': 1.38, 'Q': 3.9,
+           'E': 6.32, 'G': 7.03, 'H': 2.26, 'I': 5.49, 'L': 9.68, 'K': 5.19, 'M': 2.32,
+           'F': 3.87, 'P': 5.02, 'S': 7.14, 'T': 5.53, 'W': 1.25, 'Y': 2.91, 'V': 6.73
+        }
+# from https://en.wikipedia.org/wiki/Amino_acid#Table_of_standard_amino_acid_abbreviations_and_properties
+
 
 def identity(ref:chr, alt:chr) -> float:
     return 1 if ref != alt else 0
@@ -94,13 +100,15 @@ def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
     BLOSUM = bl.BLOSUM(blo)
 
     # get expected value of substitution matrix
-    aas = [x for x in BLOSUM][:-5] # remove values coding for unknown AAs
-    ev = -1 #sum(map(lambda x: BLOSUM[x[0]][x[1]],
-        #itertools.product(aas, aas))) / (len(aas)**2)
+    #aas = [x for x in BLOSUM][:-5] # remove values coding for unknown AAs
+    #ev = sum(map(lambda x: x[0][1]*x[1][1]*BLOSUM[x[0][0]][x[1][0]],
+    #    itertools.product(AA_FREQS.items(), AA_FREQS.items()))) / (len(aas)**2)
+
+    ev = -23.42 # the code block above computes to this
 
     l = max(len(ref), len(alt)) # get alignment length
 
-    alndist = alignment_distance(ref, alt, subs=blosum, gapcost= affine if gaps else no_gaps)
+    alndist = alignment_distance(ref, alt, subs=blosum, gapcost= (lambda n: -8 -3*n) if gaps else no_gaps)
     normdist = max(1, alndist - l*ev) # normalize by sequence length, enforce distance >= 1 as a pseudocount in case of above-random dissimilarity
     
     lim = (alignment_distance(ref, ref, subs=blosum, gapcost=None) +
