@@ -37,3 +37,14 @@ class MSA:
 
     def __repr__(self) -> str:
         return '\n'.join([f">{id}\n{seq}" for id, seq in self.alns.items()])
+
+    def sumofpairs(self) -> float:
+        import distance
+        return sum([sum([
+                distance.alignment_distance(self.alns[x], self.alns[y])
+                # avoid double-counting by requiring this bound
+                for y in self.alns if y > x ])
+            for x in self.alns])
+
+    def sumofpairs_avg(self) -> float:
+        return self.sumofpairs()*2/(len(self.alns)**2 - len(self.alns))

@@ -13,15 +13,19 @@ def main():
     m = MSA.from_file(sys.argv[1])
     #print(m)
     d = DistMat.from_msa(m, distfun=scoredist)
-    print(d.idmap)
-    print(d)
+    #print(d.idmap)
+    #print(d)
     d_upgma = UPGMA_matrix(d)
-    print(d_upgma.idmap)
-    print(d_upgma)
+    #print(d_upgma.idmap)
+    #print(d_upgma)
     diff = d - d_upgma
-    print(diff)
-    print(diff.norm_frobenius())
-    print(diff.absavg())
+    #print(diff)
+    print("msatrick, frobenius:", diff.norm_frobenius(), sep='\t')
+    print("msatrick, absavg:", diff.absavg(), sep='\t')
+    print("distance, frobenius:", d.norm_frobenius(), sep='\t')
+    print("distance, absavg:", d.absavg(), sep='\t')
+    print("sum of pairs:", m.sumofpairs(), sep='\t')
+    print("sum of pairs, avg:", m.sumofpairs_avg(), sep='\t')
 
 
 
