@@ -8,11 +8,10 @@ class MSA:
     def __init__(self, alns:Dict[str, List[chr]]):
         self.alns = alns # store fasta as mapping of ID to sequence
 
-    @classmethod
-    def subset(cls, subs):
+    def subset(self, subs):
         if not subs.issubset(self.alns.keys()):
             raise ValueError(f"{subs} is not a subset of {self.alns.keys}!")
-        return cls(alns[subs])
+        return MSA({x:self.alns[x] for x in subs})
 
     @classmethod
     def from_file(cls, path: os.PathLike):
