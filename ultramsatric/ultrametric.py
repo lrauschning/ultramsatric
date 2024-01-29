@@ -1,8 +1,10 @@
-import numpy as np
-import dendropy
-from distance import DistMat
-import tempfile
 from typing import Set
+import tempfile
+
+import dendropy
+import numpy as np
+
+from .distance import DistMat
 
 class Tree:
     def __init__(self, l, ldist: float, r, rdist: float):

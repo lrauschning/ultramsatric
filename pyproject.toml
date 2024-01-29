@@ -16,9 +16,11 @@ dependencies = [ "numpy",
 ]
 dynamic = ["version"]
 
-
 [project.scripts]
 ultramsatric = "ultramsatric:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "ultramsatric.__version__"}
+
+[tool.setuptools.packages]
+find = {}

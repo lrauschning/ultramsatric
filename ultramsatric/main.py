@@ -2,9 +2,10 @@
 #from . import __version__
 import sys
 
-from msa import MSA
-from distance import *
-from ultrametric import *
+from ultramsatric import *
+from .ultrametric import *
+from .msa import MSA
+from .distance import *
 
 def main():
     #print(__version__)

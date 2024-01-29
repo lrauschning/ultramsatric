@@ -1,7 +1,8 @@
-import copy
-import numpy as np
 from typing import Dict, List
+import copy
 import os
+
+import numpy as np
 
 class MSA:
     def __init__(self, alns:Dict[str, List[chr]]):
@@ -41,7 +42,8 @@ class MSA:
     def sumofpairs(self) -> float:
         import distance
         return sum([sum([
-                distance.alignment_distance(self.alns[x], self.alns[y])
+                #distance.alignment_distance(self.alns[x], self.alns[y], subs=distance.blosum)
+                distance.scoredist(self.alns[x], self.alns[y])
                 # avoid double-counting by requiring this bound
                 for y in self.alns if y > x ])
             for x in self.alns])

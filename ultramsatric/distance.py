@@ -1,12 +1,16 @@
 #!/bin/python3
+
 from typing import List, Callable, Dict
 import os
-import numpy as np
-from msa import MSA
-import dendropy
-import math
-import blosum as bl
 import itertools
+import math
+
+import numpy as np
+import dendropy
+import blosum as bl
+
+from .msa import MSA
+
 
 BLOSUM = bl.BLOSUM(62)
 
@@ -108,7 +112,7 @@ def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
 
     l = max(len(ref), len(alt)) # get alignment length
 
-    alndist = alignment_distance(ref, alt, subs=blosum, gapcost= (lambda n: -8 -3*n) if gaps else no_gaps)
+    alndist = alignment_distance(ref, alt, subs=blosum, gapcost= (lambda n: -8 -3*n) if gaps else (lambda n: -4*n))
     normdist = max(1, alndist - l*ev) # normalize by sequence length, enforce distance >= 1 as a pseudocount in case of above-random dissimilarity
     
     lim = (alignment_distance(ref, ref, subs=blosum, gapcost=None) +
