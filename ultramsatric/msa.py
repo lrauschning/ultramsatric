@@ -24,6 +24,8 @@ class MSA:
             seq = list()
             for l in f:
                 l = l.strip()
+                if len(l) == 0: # skip empty lines
+                    continue
                 if l[0] == '>':
                     if len(seq) > 0: # avoid adding empty line
                         alns[curid] = seq # store the sequence we have so far
@@ -40,10 +42,10 @@ class MSA:
         return '\n'.join([f">{id}\n{seq}" for id, seq in self.alns.items()])
 
     def sumofpairs(self) -> float:
-        import distance
+        import ultramsatric.distance as dst
         return sum([sum([
-                #distance.alignment_distance(self.alns[x], self.alns[y], subs=distance.blosum)
-                distance.scoredist(self.alns[x], self.alns[y])
+                #dst.alignment_distance(self.alns[x], self.alns[y], subs=distance.blosum)
+                dst.scoredist(self.alns[x], self.alns[y])
                 # avoid double-counting by requiring this bound
                 for y in self.alns if y > x ])
             for x in self.alns])
