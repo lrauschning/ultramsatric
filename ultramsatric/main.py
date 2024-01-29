@@ -21,12 +21,12 @@ def main():
     #print(d_upgma)
     diff = d - d_upgma
     #print(diff)
-    print("msatrick, frobenius:", diff.norm_frobenius(), sep='\t')
-    print("msatrick, absavg:", diff.absavg(), sep='\t')
-    print("distance, frobenius:", d.norm_frobenius(), sep='\t')
-    print("distance, absavg:", d.absavg(), sep='\t')
-    print("sum of pairs:", m.sumofpairs(), sep='\t')
-    print("sum of pairs, avg:", m.sumofpairs_avg(), sep='\t')
+    print("msatric", "frobenius:", diff.norm_frobenius(), sep='\t')
+    print("msatric", "absavg:", diff.absavg(), sep='\t')
+    print("distance", "frobenius:", d.norm_frobenius(), sep='\t')
+    print("distance", "absavg:", d.absavg(), sep='\t')
+    print("SOP", "", "sum:", "",  m.sumofpairs(), sep='\t')
+    print("SOP", "", "avg:", "", m.sumofpairs_avg(), sep='\t')
 
 
 
