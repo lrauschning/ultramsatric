@@ -2,7 +2,6 @@
 #from . import __version__
 import sys
 
-from ultramsatric import *
 from .ultrametric import *
 from .msa import MSA
 from .distance import *
@@ -27,6 +26,7 @@ def main():
 def eval_msa(m: MSA):
     #print(m)
     d = DistMat.from_msa(m, distfun=scoredist)
+    #d = DistMat.from_msa(m, distfun=alignment_distance)
     #print(d.idmap)
     #print(d)
     d_upgma = UPGMA_matrix(d)
@@ -38,8 +38,8 @@ def eval_msa(m: MSA):
     print("msatric", "absavg:", diff.absavg(), sep='\t')
     print("distance", "frobenius:", d.norm_frobenius(), sep='\t')
     print("distance", "absavg:", d.absavg(), sep='\t')
-    print("SOP", "", "sum:", "",  m.sumofpairs(), sep='\t')
-    print("SOP", "", "avg:", "", m.sumofpairs_avg(), sep='\t')
+    print("SOP", "", "sum:", "",  m.sumofpairs(scoredist), sep='\t')
+    print("SOP", "", "avg:", "", m.sumofpairs_avg(scoredist), sep='\t')
 
 
 
