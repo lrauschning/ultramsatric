@@ -17,24 +17,30 @@ class MSA:
     def from_file(cls, path: os.PathLike):
         """Parses a FASTA file into a MSA object.
         """
-        alns = dict()
         with open(path, 'rt') as f:
-            curid = ''
-            seq = list()
-            for l in f:
-                l = l.strip()
-                if len(l) == 0: # skip empty lines
-                    continue
-                if l[0] == '>':
-                    if len(seq) > 0: # avoid adding empty line
-                        alns[curid] = seq # store the sequence we have so far
-                    curid = l.split(' ')[0][1:].strip() # extract new ID
-                    seq = list() # reset sequence buffer
-                    continue
-                seq += list(l.strip())
+            return cls.from_inputstream(f)
 
-            if len(seq) > 0: # avoid adding empty line
-                alns[curid] = seq
+    @classmethod
+    def from_inputstream(cls, stream):
+        """Parses a FASTA stream into a MSA object.
+        """
+        alns = dict()
+        curid = ''
+        seq = list()
+        for l in stream:
+            l = l.strip()
+            if len(l) == 0: # skip empty lines
+                continue
+            if l[0] == '>':
+                if len(seq) > 0: # avoid adding empty line
+                    alns[curid] = seq # store the sequence we have so far
+                curid = l.split(' ')[0][1:].strip() # extract new ID
+                seq = list() # reset sequence buffer
+                continue
+            seq += list(l.strip())
+
+        if len(seq) > 0: # avoid adding empty line
+            alns[curid] = seq
         return cls(alns)
 
     def __repr__(self) -> str:

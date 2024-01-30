@@ -36,7 +36,7 @@ def affine(n:int) -> float:
 def no_gaps(n:int) -> float:
     return 0.0
 
-def alignment_distance(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
+def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
     """This function calculates the alignment distance between `ref` and `alt`, using the specified substitution model `subs` and the gapcost function `gapcost`.
     :returns: Alignment distance.
     """
@@ -93,7 +93,7 @@ def alignment_distance(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr]
     return dist
 
 def log_alndist(ref, alt, subs: Callable[[chr, chr], float] = blosum, gapcost: Callable[[int], float] = affine) -> float:
-    return math.log(alignment_distance(ref, alt, subs=subs, gapcost=gapcost))
+    return math.log(alndist(ref, alt, subs=subs, gapcost=gapcost))
 
 def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
     """Implements the Scoredist protein distance function, as described in https://doi.org/10.1186/1471-2105-6-108.
@@ -115,13 +115,13 @@ def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
 
     l = max(len(ref), len(alt)) # get alignment length
 
-    alndist = alignment_distance(ref, alt, subs=blosum, gapcost= (lambda n: -8 -3*n) if gaps else (lambda n: -4*n))
-    normdist = max(1, alndist - l*ev) # normalize by sequence length, enforce distance >= 1 as a pseudocount in case of above-random dissimilarity
+    dist = alndist(ref, alt, subs=blosum, gapcost= (lambda n: -8 -3*n) if gaps else (lambda n: -4*n))
+    normdist = max(1, dist - l*ev) # normalize by sequence length, enforce distance >= 1 as a pseudocount in case of above-random dissimilarity
     
-    lim = (alignment_distance(ref, ref, subs=blosum, gapcost=None) +
-           alignment_distance(alt, alt, subs=blosum, gapcost=None)) / 2 # there shouldn't be any gaps aligning a sequence to itself, so do not set gapcost
+    lim = (alndist(ref, ref, subs=blosum, gapcost=None) +
+           alndist(alt, alt, subs=blosum, gapcost=None)) / 2 # there shouldn't be any gaps aligning a sequence to itself, so do not set gapcost
     normlim = max(1, lim - l*ev) # pseudocount again
-    #print(l, ev, alndist, normdist, lim, normlim)
+    #print(l, ev, dist, normdist, lim, normlim)
     
     return -c*math.log(normdist / normlim)*100 # logtransform, scale and return
 
@@ -210,7 +210,7 @@ class DistMat:
         # init variables
         ids = sorted(m.alns.keys())
         n = len(ids)
-        print(n, ids)
+        #print(n, ids)
         # stolen from https://stackoverflow.com/a/1679702
         idmap = dict(map(reversed, enumerate(ids)))
         backing = np.ndarray(n*(n-1)//2, dtype=np.float32)
@@ -247,4 +247,4 @@ if __name__ == "__main__":
     import sys
     ref = [x for x in sys.argv[1]]
     alt = [x for x in sys.argv[2]]
-    print(alignment_distance(ref, alt))
+    print(alndist(ref, alt))

@@ -57,7 +57,7 @@ def UPGMA_matrix(d: DistMat) -> DistMat:
     Does not use the Tree class.
     """
     tmp = tempfile.NamedTemporaryFile(mode='wt').name + '.tsv'
-    print(tmp)
+    #print(tmp)
     d.to_dendropy_csv(tmp)
     pdm = dendropy.PhylogeneticDistanceMatrix.from_csv(src=open(tmp, mode='rt'), delimiter='\t')
     return DistMat.from_dendropy(pdm.upgma_tree().phylogenetic_distance_matrix())
