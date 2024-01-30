@@ -92,6 +92,9 @@ def alignment_distance(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr]
 
     return dist
 
+def log_alndist(ref, alt, subs: Callable[[chr, chr], float] = blosum, gapcost: Callable[[int], float] = affine) -> float:
+    return math.log(alignment_distance(ref, alt, subs=subs, gapcost=gapcost))
+
 def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
     """Implements the Scoredist protein distance function, as described in https://doi.org/10.1186/1471-2105-6-108.
     Uses the BLOSUM62 matrix and no gap penalty by default.
