@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument("-i", dest='infile', default='-', type=ap.FileType('r'), help="Input MSA in FASTA format. Default stdin. TODO support gzip input.")
     parser.add_argument("-o", dest='outfile', default='-', type=ap.FileType('wt'), help="File to write output CSV to. Default stdout.")
-    parser.add_argument("-m", "--metrics", dest='metrics', default='frob,absavg', type=str, help="Metrics to compute, separated by ','. The order of metrics will be preserved in the output CSV. Valid metrics are 'frob', 'absavg', 'dfrob', 'dabsavg'. Metrics starting with 'd' are run on the distance matrix directly instead of the matrix containing the distance to the closest ultrametric tree. Default 'frob,absavg'.")
+    parser.add_argument("-m", "--metrics", dest='metrics', default='ufrob,uabsavg', type=str, help="Metrics to compute, separated by ','. The order of metrics will be preserved in the output CSV. Valid metrics are 'frob', 'absavg', 'dfrob', 'dabsavg'. Metrics starting with 'd' are run on the distance matrix directly instead of the matrix containing the distance to the closest ultrametric tree. Default 'frob,absavg'.")
     parser.add_argument("-d", "--dist", "--distance", dest='dist', default='scoredist', type=str, help="Distance function to use to calculate a distance matrix from an MSA. Default scoredist. Can be 'scoredist', 'alndist' or 'logalndist'.")
     parser.add_argument("--id", dest='id', default=None, type=str, help="Sample ID to index the CSV with")
 
@@ -33,12 +33,20 @@ def main():
     m = MSA.from_inputstream(args.infile)
 
     d = DistMat.from_msa(m, distfun=args.dist)
-    diff = diffmatrix(m)
 
-    metricmapper = {'frob': lambda: str(diff.norm_frobenius()),
-                    'absavg': lambda: str(diff.absavg()),
+    d_upgma = UPGMA_matrix(d)
+    d_nj = NJ_matrix(d)
+
+    udiff = d - d_upgma
+    ndiff = d - d_nj
+
+    metricmapper = {'ufrob': lambda: str(udiff.norm_frobenius()),
+                    'uabsavg': lambda: str(udiff.absavg()),
+                    'nfrob': lambda: str(ndiff.norm_frobenius()),
+                    'nabsavg': lambda: str(ndiff.absavg()),
                     'dfrob': lambda: str(d.norm_frobenius()),
-                    'dabsavg': lambda: str(d.absavg())}
+                    'dabsavg': lambda: str(d.absavg())
+                    }
 
     if args.id:
         args.outfile.write('id,')
@@ -55,11 +63,6 @@ def main():
     #print("===without outgroups===")
     #toxin_set = set(["1kbt","2crt","2cdx","1cdta","1tgxa","1kxia","1tfs","1drs","1txb","2ctx","1ntn","1lsi","2abxa","2nbta","1nean","1nor","1cod","1nxb","1ntx","1fas"])
 
-def diffmatrix(m: MSA) -> np.ndarray:
-    d = DistMat.from_msa(m, distfun=scoredist)
-    d_upgma = UPGMA_matrix(d)
-    diff = d - d_upgma
-    return diff
 
 #def (m: MSA) -> float:
 #    return get_diffmatrix(m).norm_frobenius()

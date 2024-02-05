@@ -62,6 +62,16 @@ def UPGMA_matrix(d: DistMat) -> DistMat:
     pdm = dendropy.PhylogeneticDistanceMatrix.from_csv(src=open(tmp, mode='rt'), delimiter='\t')
     return DistMat.from_dendropy(pdm.upgma_tree().phylogenetic_distance_matrix())
 
+def NJ_matrix(d: DistMat) -> DistMat:
+    """
+    Quick & Dirty function to get a NJ distance matrix from a distance matrix by calling the UPGMA implementation in dendropy directly.
+    Does not use the Tree class.
+    """
+    tmp = tempfile.NamedTemporaryFile(mode='wt').name + '.tsv'
+    #print(tmp)
+    d.to_dendropy_csv(tmp)
+    pdm = dendropy.PhylogeneticDistanceMatrix.from_csv(src=open(tmp, mode='rt'), delimiter='\t')
+    return DistMat.from_dendropy(pdm.nj_tree().phylogenetic_distance_matrix())
 
 
 def closest_ultrametric(matrix: DistMat) -> str:
