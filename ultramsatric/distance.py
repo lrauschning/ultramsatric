@@ -161,6 +161,9 @@ class DistMat:
     def get(self, a:str, b:str) -> float:
         return self._get(self.idmap[a], self.idmap[b])
 
+    def __len__(self) -> int:
+        return self.n
+
     def _get(self, a: int, b: int) -> float:
         if b < a: # ensure a <= b
             a, b = b, a
@@ -242,6 +245,11 @@ class DistMat:
 
     def absavg(self) -> float:
         return self.abssum()/len(self._backing)
+
+    def corr(self, other) -> float:
+        assert(len(self) == len(other))
+        cov = np.sum((self._backing - np.mean(self._backing))*(other._backing - np.mean(other._backing)))/(self.n**2)
+        return cov/(np.std(self._backing)*np.std(other._backing))
 
 if __name__ == "__main__":
     import sys

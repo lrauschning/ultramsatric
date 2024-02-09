@@ -43,8 +43,10 @@ def main():
 
     metricmapper = {'ufrob': lambda: str(udiff.norm_frobenius()),
                     'uabsavg': lambda: str(udiff.absavg()),
+                    'ucorr': lambda: str(d.corr(d_upgma)),
                     'nfrob': lambda: str(ndiff.norm_frobenius()),
                     'nabsavg': lambda: str(ndiff.absavg()),
+                    'ncorr': lambda: str(d.corr(d_nj)),
                     'dfrob': lambda: str(d.norm_frobenius()),
                     'dabsavg': lambda: str(d.absavg())
                     }
