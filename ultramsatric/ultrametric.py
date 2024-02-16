@@ -1,4 +1,4 @@
-from typing import Set, Tuple, List
+from typing import Set, Tuple, List, Dict
 import tempfile
 
 import dendropy
@@ -92,28 +92,39 @@ def NJ_matrix(d: DistMat) -> DistMat:
     return DistMat.from_dendropy(pdm.nj_tree().phylogenetic_distance_matrix())
 
 
-def closest_ultrametric(matrix: DistMat) -> str:
-    pass
+def tallest_ultrametric(matrix: DistMat) -> DistMat:
+    """
+    Implement the algorithm for a closest ultrametric tree of a distance matrix from Prof. Volker Heuns lecture script, section 2.7, page 161 (in version 6.28).
+    The algorithm is described in Figure 2.66.
+    This implementation does not explicitly construct the tree, but directly computes the patristic distances from it at each step.
+    The recursion in the algorithm is unfolded into a single loop to facilitate the matrix construction.
+    :returns: A DistMat object representing the ultrametric distance matrix corresponding to the tallest ultrametric tree that is compatible to the input distances. These are not required to be additive or ultrametric.
+    """
+    mst = mst(d)
+    um = DistMat(d.n, d.idmap, np.ndarray(d.n*(d.n-1)//2, dtype=np.float32))
 
-def mst(d: DistMat) -> List[Tuple[int, int]]:
+def mst_from_dmat(d: DistMat) -> Dict[int, List[int]]:
     """
     Implements the DJP algorithm on a distance matrix.
     Runs in O(n^2) time and O(n) space.
-    :returns: A list of pairs of indices corresponding to the edges that are part of the spanning tree.
+    :returns: A map of adjacency lists corresponding to the MST.
     """
     rem = set(range(d.n)) # set of nodes that are not yet part of the MST
 
     ## Init: choose the smallet edge
     amin, bmin = d._revindex(np.argmin(d._backing))
-    mst = [(amin, bmin)] # list of edges in the MST
-    done = {amin, bmin} # set of nodes already in the MST
+    #mst = [(amin, bmin)] # list of edges in the MST
+    mst = {amin: [bmin], bmin: [amin]} # init map of adjacency lists of the MST
+    #done = {amin, bmin} # set of nodes already in the MST
     rem -= {amin, bmin}
+    #TODO rewrite this with a map of adjacency lists
+    #then implement the closest ultrametric efficiently
 
     while rem: # iterate until no nodes remain
         min_d = math.inf
         out, new = 0, 0
         # iterate through all edges that could be added in this step
-        for i in done:
+        for i in mst.keys():
             for j in rem:
                 dist = d._get(i, j)
                 # store the minimal one
@@ -122,8 +133,10 @@ def mst(d: DistMat) -> List[Tuple[int, int]]:
                     out, new = i, j
 
         # add new node to the MST
-        mst.append((out, new))
-        done.add(new)
+        mst[out] = mst[out] + [new]
+        mst[new] = [out]
+        #mst.append((out, new))
+        #done.add(new)
         rem.remove(new)
 
     print(mst)
