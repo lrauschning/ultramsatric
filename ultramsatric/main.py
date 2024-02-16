@@ -39,16 +39,20 @@ def main():
     d_upgma = UPGMA_matrix(d)
     d_nj = NJ_matrix(d)
     d_root = root_ext_add(d)
+    d_tallest = tallest_ultrametric(d)
 
-    print(mst_from_dmat(d))
 
     udiff = d - d_upgma
     ndiff = d - d_nj
     rdiff = d - d_root
+    tdiff = d - d_tallest
 
     metricmapper = {'ufrob': lambda: str(udiff.norm_frobenius()),
                     'uabsavg': lambda: str(udiff.absavg()),
                     'ucorr': lambda: str(d.corr(d_upgma)),
+                    'tfrob': lambda: str(tdiff.norm_frobenius()),
+                    'tabsavg': lambda: str(tdiff.absavg()),
+                    'tcorr': lambda: str(d.corr(d_tallest)),
                     'rfrob': lambda: str(rdiff.norm_frobenius()),
                     'rabsavg': lambda: str(rdiff.absavg()),
                     'rcorr': lambda: str(d.corr(d_root)),
@@ -66,6 +70,8 @@ def main():
         print(ndiff)
         print("===Rooting Matrix===")
         print(rdiff)
+        print("===Tallest Ultrametirc Matrix===")
+        print(tdiff)
 
     if args.header:
         if args.id:
