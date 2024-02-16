@@ -1,5 +1,4 @@
 from typing import Dict, List
-import copy
 import os
 
 import numpy as np
