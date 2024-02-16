@@ -40,6 +40,8 @@ def main():
     d_nj = NJ_matrix(d)
     d_root = root_ext_add(d)
 
+    print(mst(d))
+
     udiff = d - d_upgma
     ndiff = d - d_nj
     rdiff = d - d_root

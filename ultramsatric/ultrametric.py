@@ -1,8 +1,9 @@
-from typing import Set
+from typing import Set, Tuple, List
 import tempfile
 
 import dendropy
 import numpy as np
+import math
 
 from .distance import DistMat
 
@@ -94,7 +95,36 @@ def NJ_matrix(d: DistMat) -> DistMat:
 def closest_ultrametric(matrix: DistMat) -> str:
     pass
 
-def minimal_spanning_tree(matrix: DistMat) -> str:
-    # implementable in linear time for a dense distance
-    pass
+def mst(d: DistMat) -> List[Tuple[int, int]]:
+    """
+    Implements the DJP algorithm on a distance matrix.
+    Runs in O(n^2) time and O(n) space.
+    :returns: A list of pairs of indices corresponding to the edges that are part of the spanning tree.
+    """
+    rem = set(range(d.n)) # set of nodes that are not yet part of the MST
 
+    ## Init: choose the smallet edge
+    amin, bmin = d._revindex(np.argmin(d._backing))
+    mst = [(amin, bmin)] # list of edges in the MST
+    done = {amin, bmin} # set of nodes already in the MST
+    rem -= {amin, bmin}
+
+    while rem: # iterate until no nodes remain
+        min_d = math.inf
+        out, new = 0, 0
+        # iterate through all edges that could be added in this step
+        for i in done:
+            for j in rem:
+                dist = d._get(i, j)
+                # store the minimal one
+                if dist < min_d:
+                    min_d = dist
+                    out, new = i, j
+
+        # add new node to the MST
+        mst.append((out, new))
+        done.add(new)
+        rem.remove(new)
+
+    print(mst)
+    return mst
