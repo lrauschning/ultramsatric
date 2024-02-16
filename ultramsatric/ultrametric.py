@@ -62,6 +62,23 @@ def UPGMA_matrix(d: DistMat) -> DistMat:
     pdm = dendropy.PhylogeneticDistanceMatrix.from_csv(src=open(tmp, mode='rt'), delimiter='\t')
     return DistMat.from_dendropy(pdm.upgma_tree().phylogenetic_distance_matrix())
 
+def root_ext_add(d: DistMat) -> DistMat:
+    """
+    Transforms an additive distance matrix into an ultrametric one by rooting along the maximal edge and extending edges incident to leaves.
+    This is guaranteed to return an ultrametric matrix if the input is additive.
+    If the input matrix is not additive, may return an invalid DistMat.
+    """
+    amax, bmax = d._revindex(np.argmax(d._backing)) # select root by getting maximal distance
+    dmax = d._get(amax, bmax)
+
+    # construct ultrametric matrix
+    um = DistMat(d.n, d.idmap, np.ndarray(d.n*(d.n-1)//2, dtype=np.float32))
+    um.apply(lambda i, j, v: dmax - (d._get(amax, j) + d._get(amax, i) - d._get(i, j))/2)
+    #print(d)
+    #print(um)
+    return um
+
+
 def NJ_matrix(d: DistMat) -> DistMat:
     """
     Quick & Dirty function to get a NJ distance matrix from a distance matrix by calling the UPGMA implementation in dendropy directly.

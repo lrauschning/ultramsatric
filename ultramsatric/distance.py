@@ -157,12 +157,14 @@ class DistMat:
 
         return cls(n, idmap, backing)
         
+    def _index(self, a:int, b:int) -> int:
+        return DistMat.index(a, b, self.n)
+
+    def _revindex(self, x:int) -> int:
+        return DistMat.revindex(x, self.n)
 
     def get(self, a:str, b:str) -> float:
         return self._get(self.idmap[a], self.idmap[b])
-
-    def __len__(self) -> int:
-        return self.n
 
     def _get(self, a: int, b: int) -> float:
         if b < a: # ensure a <= b
@@ -171,15 +173,22 @@ class DistMat:
             return 0
         return self._backing[self._index(a, b)]
 
-    def _index(self, a:int, b:int) -> int:
-        return DistMat.index(a, b, self.n)
+    def set(self, a:str, b:str, v:float):
+        self._set(self.idmap[a], self.idmap[b])
+
+    def _set(self, a:int, b:int, v:float):
+        self._backing[self._index(a, b)] = v
+
+    def __len__(self) -> int:
+        return self.n
+
 
     def apply(self, fun):
         """Takes a function taking as arguments the position and current value, and stores the result of applying that function at each position in the Distance Matrix.
         """
-        for i in range(len(ids)):
-            for j in range(i+1, len(ids)):
-                self._backing[sevf._index(i, j)] = fun(i, j, self._get(i, j))
+        for i in range(self.n):
+            for j in range(i+1, self.n):
+                self._backing[self._index(i, j)] = fun(i, j, self._get(i, j))
 
 
     @classmethod
@@ -187,6 +196,17 @@ class DistMat:
         if b < a: # ensure a <= b
             a, b = b, a
         return (a * (a-1))//2 + a * (n - a) + (b - a - 1)
+
+    @classmethod
+    def revindex(cls, x:int, n:int) -> (int, int):
+        """
+        Inverse of the index function. This is unique because indices are discrete.
+        index(*revindex(i, n), n) will hold for any i and n.
+        """
+        a: int = int((2*n-1-math.sqrt(4*n*(n-1)-8*x+1))//2) # look for maximal a, then shift leftover into b
+        b: int = int(x + 1 - a*(2*n - 3 - a)/2)
+        assert(a <= b)
+        return a, b
 
     def to_full_matrix(self) -> np.ndarray:
         ret = np.zeros([self.n, self.n], dtype=self._backing.dtype)

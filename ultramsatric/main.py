@@ -37,13 +37,18 @@ def main():
 
     d_upgma = UPGMA_matrix(d)
     d_nj = NJ_matrix(d)
+    d_root = root_ext_add(d)
 
     udiff = d - d_upgma
     ndiff = d - d_nj
+    rdiff = d - d_root
 
     metricmapper = {'ufrob': lambda: str(udiff.norm_frobenius()),
                     'uabsavg': lambda: str(udiff.absavg()),
                     'ucorr': lambda: str(d.corr(d_upgma)),
+                    'rfrob': lambda: str(rdiff.norm_frobenius()),
+                    'rabsavg': lambda: str(rdiff.absavg()),
+                    'rcorr': lambda: str(d.corr(d_root)),
                     'nfrob': lambda: str(ndiff.norm_frobenius()),
                     'nabsavg': lambda: str(ndiff.absavg()),
                     'ncorr': lambda: str(d.corr(d_nj)),
