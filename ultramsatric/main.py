@@ -19,6 +19,7 @@ def main():
     parser.add_argument("-d", "--dist", "--distance", dest='dist', default='scoredist', type=str, help="Distance function to use to calculate a distance matrix from an MSA. Default scoredist. Can be 'scoredist', 'alndist' or 'logalndist'.")
     parser.add_argument("--id", dest='id', default=None, type=str, help="Sample ID to index the CSV with")
     parser.add_argument("--no-header", dest='header', action='store_false', default=True, help="Emit a CSV without a header")
+    parser.add_argument("-p", "--print-matrix", dest='print_matrix', action='store_true', default=False, help="Print the raw matrices caculated by ultramsatric.")
 
     args = parser.parse_args()
 
@@ -55,6 +56,14 @@ def main():
                     'dfrob': lambda: str(d.norm_frobenius()),
                     'dabsavg': lambda: str(d.absavg())
                     }
+
+    if args.print_matrix:
+        print("===UPGMA Matrix===")
+        print(udiff)
+        print("===NJ Matrix===")
+        print(ndiff)
+        print("===Rooting Matrix===")
+        print(rdiff)
 
     if args.header:
         if args.id:

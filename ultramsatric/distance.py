@@ -188,6 +188,8 @@ class DistMat:
         """
         for i in range(self.n):
             for j in range(i+1, self.n):
+                #print("old:", self._backing[self._index(i, j)])
+                #print("new:", fun(i, j, self._get(i, j)))
                 self._backing[self._index(i, j)] = fun(i, j, self._get(i, j))
 
 
@@ -208,11 +210,17 @@ class DistMat:
         assert(a <= b)
         return a, b
 
-    def to_full_matrix(self) -> np.ndarray:
+    def to_full_matrix(self, rnd: int=-1) -> np.ndarray:
+        """
+        Returns a full n*n matrix containing the distances encoded in this matrix.
+        The returned matrix will be symmetric.
+        :args: rnd=0: Number of digits to round the returned matrix to, default -1 (no rounding).
+        Mainly intended for displaying output graphically.
+        """
         ret = np.zeros([self.n, self.n], dtype=self._backing.dtype)
         for i in range(self.n):
             for j in range(self.n):
-                ret[(i, j)] = self._get(i, j)
+                ret[(i, j)] = self._get(i, j) if rnd < 0 else round(self._get(i, j), rnd)
         return ret
 
     def to_dendropy_csv(self, path: os.PathLike, sep='\t', newline='\n'):
@@ -226,7 +234,7 @@ class DistMat:
 
 
     def __repr__(self) -> str:
-        return str(self.to_full_matrix())
+        return "\n".join(["\t".join(map(str, x[:])) for x in self.to_full_matrix(rnd=2)[:]])
 
     @classmethod
     def from_msa(cls, m: MSA, distfun):
