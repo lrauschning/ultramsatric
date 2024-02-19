@@ -14,6 +14,9 @@ from .msa import MSA
 
 BLOSUM = bl.BLOSUM(62)
 
+PAM250 = None
+# https://swift.cmbi.umcn.nl/teach/aainfo/pam250.shtml
+
 AA_FREQS = {'A': 8.76, 'R': 5.78, 'N': 3.93, 'D': 5.49, 'C': 1.38, 'Q': 3.9,
            'E': 6.32, 'G': 7.03, 'H': 2.26, 'I': 5.49, 'L': 9.68, 'K': 5.19, 'M': 2.32,
            'F': 3.87, 'P': 5.02, 'S': 7.14, 'T': 5.53, 'W': 1.25, 'Y': 2.91, 'V': 6.73
@@ -94,6 +97,9 @@ def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = 
 
 def log_alndist(ref, alt, subs: Callable[[chr, chr], float] = blosum, gapcost: Callable[[int], float] = affine) -> float:
     return math.log(alndist(ref, alt, subs=subs, gapcost=gapcost))
+
+def sq_alndist(ref, alt, subs: Callable[[chr, chr], float] = blosum, gapcost: Callable[[int], float] = affine) -> float:
+    return alndist(ref, alt, subs=subs, gapcost=gapcost)**2
 
 def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
     """Implements the Scoredist protein distance function, as described in https://doi.org/10.1186/1471-2105-6-108.
