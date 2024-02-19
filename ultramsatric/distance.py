@@ -7,37 +7,10 @@ import math
 
 import numpy as np
 import dendropy
-import blosum as bl
 
 from .msa import MSA
+from .substitutions import *
 
-
-BLOSUM = bl.BLOSUM(62)
-
-PAM250 = None
-# https://swift.cmbi.umcn.nl/teach/aainfo/pam250.shtml
-
-AA_FREQS = {'A': 8.76, 'R': 5.78, 'N': 3.93, 'D': 5.49, 'C': 1.38, 'Q': 3.9,
-           'E': 6.32, 'G': 7.03, 'H': 2.26, 'I': 5.49, 'L': 9.68, 'K': 5.19, 'M': 2.32,
-           'F': 3.87, 'P': 5.02, 'S': 7.14, 'T': 5.53, 'W': 1.25, 'Y': 2.91, 'V': 6.73
-        }
-# from https://en.wikipedia.org/wiki/Amino_acid#Table_of_standard_amino_acid_abbreviations_and_properties
-
-
-def identity(ref:chr, alt:chr) -> float:
-    return 1 if ref != alt else 0
-
-def blosum(ref:chr, alt:chr) -> float:
-    return BLOSUM[ref][alt]
-
-def linear(n:int) -> float:
-    return 3*n
-
-def affine(n:int) -> float:
-    return 3 + 2*n
-
-def no_gaps(n:int) -> float:
-    return 0.0
 
 def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
     """This function calculates the alignment distance between `ref` and `alt`, using the specified substitution model `subs` and the gapcost function `gapcost`.
@@ -101,31 +74,30 @@ def log_alndist(ref, alt, subs: Callable[[chr, chr], float] = blosum, gapcost: C
 def sq_alndist(ref, alt, subs: Callable[[chr, chr], float] = blosum, gapcost: Callable[[int], float] = affine) -> float:
     return alndist(ref, alt, subs=subs, gapcost=gapcost)**2
 
-def scoredist(ref:List[chr], alt:List[chr], gaps=False, blo=62) -> float:
+def scoredist(ref:List[chr], alt:List[chr], gapcost=no_gaps, subs=blosum) -> float:
     """Implements the Scoredist protein distance function, as described in https://doi.org/10.1186/1471-2105-6-108.
     Uses the BLOSUM62 matrix and no gap penalty by default.
-    The BLOSUM matrix can be set as the `blo` parameter.
-    If `gaps` is set to `True`, it uses an affine gap penalty (not recommended in the paper).
+    Gapcost and substitution costs can be configured using the `gapcost` and `subs` parameters.
     :returns: Scoredist distance between `ref` and `alt`.
     """
     c = 1.3370 # from the paper
-
-    BLOSUM = bl.BLOSUM(blo)
 
     # get expected value of substitution matrix
     #aas = [x for x in BLOSUM][:-5] # remove values coding for unknown AAs
     #ev = sum(map(lambda x: x[0][1]*x[1][1]*BLOSUM[x[0][0]][x[1][0]],
     #    itertools.product(AA_FREQS.items(), AA_FREQS.items()))) / (len(aas)**2)
 
-    ev = -23.42 # the code block above computes to this
+    #ev = -23.42 # the code block above computes to this
+
+    ev = get_ev(subs)
 
     l = max(len(ref), len(alt)) # get alignment length
 
-    dist = alndist(ref, alt, subs=blosum, gapcost= (lambda n: -8 -3*n) if gaps else (lambda n: -4*n))
+    dist = alndist(ref, alt, subs=subs, gapcost=gapcost)
     normdist = max(1, dist - l*ev) # normalize by sequence length, enforce distance >= 1 as a pseudocount in case of above-random dissimilarity
     
-    lim = (alndist(ref, ref, subs=blosum, gapcost=None) +
-           alndist(alt, alt, subs=blosum, gapcost=None)) / 2 # there shouldn't be any gaps aligning a sequence to itself, so do not set gapcost
+    lim = (alndist(ref, ref, subs=subs, gapcost=None) +
+           alndist(alt, alt, subs=subs, gapcost=None)) / 2 # there shouldn't be any gaps aligning a sequence to itself, so do not set gapcost
     normlim = max(1, lim - l*ev) # pseudocount again
     #print(l, ev, dist, normdist, lim, normlim)
     
