@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument("-i", dest='infile', default='-', type=ap.FileType('r'), help="Input MSA in FASTA format. Default stdin. TODO support gzip input.")
     parser.add_argument("-o", dest='outfile', default='-', type=ap.FileType('wt'), help="File to write output CSV to. Default stdout.")
-    parser.add_argument("-m", "--metrics", dest='metrics', default='ufrob,uabsavg', type=str, help="Metrics to compute, separated by ','. The order of metrics will be preserved in the output CSV. Valid metrics are 'frob', 'absavg', 'dfrob', 'dabsavg'. Metrics starting with 'd' are run on the distance matrix directly instead of the matrix containing the distance to the closest ultrametric tree. Default 'frob,absavg'.")
+    parser.add_argument("-m", "--metrics", dest='metrics', default='ufrob,uabsavg', type=str, help="Metrics to compute, separated by ','. The order of metrics will be preserved in the output CSV. Valid metrics are 'frob', 'absavg', 'dfrob', 'dabsavg'. Metrics starting with 'd' are run on the distance matrix directly instead of the matrix containing the distance to the closest ultrametric tree. Default 'frob,absavg'. Set to '*' to compute all available metrics in alphabetic order.")
     parser.add_argument("-d", "--dist", "--distance", dest='dist', default='scoredist', type=str, help="Distance function to use to calculate a distance matrix from an MSA. Default scoredist. Can be 'scoredist', 'alndist' or 'logalndist'.")
     parser.add_argument("--id", dest='id', default=None, type=str, help="Sample ID to index the CSV with")
     parser.add_argument("--no-header", dest='header', action='store_false', default=True, help="Emit a CSV without a header")
@@ -81,6 +81,10 @@ def main():
     if args.id:
         args.outfile.write(args.id)
         args.outfile.write(',')
+    
+    if args.metrics == '*': # give an option to easily compute all metrics
+        args.metrics = ','.join(sorted(metricmapper.keys()))
+
     args.outfile.write(','.join([metricmapper[x.strip()]() for x in args.metrics.split(',')]))
     args.outfile.write('\n')
 
