@@ -54,3 +54,18 @@ class MSA:
 
     def sumofpairs_avg(self, distfun) -> float:
         return self.sumofpairs(distfun)*2/(len(self.alns)**2 - len(self.alns))
+
+    def totalcol(self, subs, gapcost) -> float:
+        tc = 0.0
+        alns = list(self.alns.values())
+        for i in range(len(alns[0])): # iterate through columns
+            for a in alns:
+                for b in alns:
+                    if a == b or (a[i] == '-' and b[i] == '-'): # do not compare a to a, or gaps to each other
+                        continue
+
+                    if a[i] == '-': # add gapcost if there is a gap in the a strand; the b strand will be caught when a is b and b is a
+                        tc += gapcost(1)
+                    else:
+                        tc += subs(a[i], b[i])
+        return tc

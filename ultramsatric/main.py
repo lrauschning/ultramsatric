@@ -3,6 +3,7 @@ from . import __version__
 from .ultrametric import *
 from .msa import MSA
 from .distance import *
+from .substitutions import *
 
 import argparse as ap
 import numpy as np
@@ -33,6 +34,8 @@ def main():
         args.dist = distmapper[args.dist]
 
     m = MSA.from_inputstream(args.infile)
+
+    print(m.totalcol(blosum, linear))
 
     d = DistMat.from_msa(m, distfun=args.dist)
 
