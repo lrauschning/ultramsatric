@@ -55,7 +55,18 @@ class MSA:
     def sumofpairs_avg(self, distfun) -> float:
         return self.sumofpairs(distfun)*2/(len(self.alns)**2 - len(self.alns))
 
-    def totalcol(self, subs, gapcost) -> float:
+    def totalcol(self, subs, gapcost, use_gaplen=True) -> float:
+        """
+        Calculates the total column score of a MSA.
+        This implementation is able to use non-linear gapcosts by looking at the neighbouring columns.
+        If disabled by passing `use_gaplen=False`, all `gapcost` calls are made as `gapcost(1)`.
+        Gap lengths do not include lengths of gaps shared between the two columns that are being compared.
+        This score is symmetric, i.e. for any comparison `subs(a, b)`, there will also be another comparison `subs(b, a)`. This is not the case for gaps -- `gapcost` is called only once per sequence that gap is in.
+
+        :args: substitution model, gapcost function
+        :returns: total column score
+        :rtype: float
+        """
         tc = 0.0
         alns = list(self.alns.values())
         for i in range(len(alns[0])): # iterate through columns
@@ -64,8 +75,31 @@ class MSA:
                     if a == b or (a[i] == '-' and b[i] == '-'): # do not compare a to a, or gaps to each other
                         continue
 
-                    if a[i] == '-': # add gapcost if there is a gap in the a strand; the b strand will be caught when a is b and b is a
-                        tc += gapcost(1)
+                    if a[i] == '-':
+                        # add gapcost if there is a gap in the a strand;
+                        # the b strand will be caught when a is b and b is a
+                        gaplen = 1
+
+                        if use_gaplen:
+                            if i > 0:
+                                if (a[i] == '-' and a[i-1] == '-' ):
+                                    continue # this gap is not new, and has been added before
+
+                            # find the gaplen by looking for an uninterrupted gap in a; ignore cases that are also gaps in b
+                            for j in range(i, len(alns[0])):
+                                if a[j] != '-':
+                                    break
+                                if b[j] == '-':
+                                   continue
+                                # the ordering is important here,
+                                # in the case below, the first gap would be counted with length 4 otherwise
+                                # a AC--TG--
+                                # b ACAA--TC
+                                gaplen += 1
+
+                        # add gapcost, indepent of if using gaplen or not
+                        tc += gapcost(gaplen)
+
                     else:
                         tc += subs(a[i], b[i])
         return tc
