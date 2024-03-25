@@ -11,7 +11,7 @@ for x in blmb lyase_1 p450 rvp; do
 
       # align them
       export DUMP_SEQ_BUCKETS_ONLY=0
-      t_coffee -thread 10 -seq ./seqdump.1 -outfile diverse.aln
+      t_coffee -thread 10 -seq ./seqdump.1 -output fasta_aln -outfile diverse.aln
 
       cd ..
 done
