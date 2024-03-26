@@ -8,6 +8,6 @@ mkdir $1
 cd $1
 
 # get the 10 most diverse sequences as the first seqdump
-t_coffee -reg -thread 10 -seq ~/homfam/combinedSeqs/${x}.fa -nseq 10
+t_coffee -reg -thread 10 -seq ~/homfam/combinedSeqs/$1.fa -nseq 10
 
-mv ./seqdump.1 ../${x}.div.fa
+mv ./seqdump.1 ../$1.div.fa
