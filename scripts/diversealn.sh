@@ -5,6 +5,7 @@ mamba activate tcoffee
 
 export DUMP_SEQ_BUCKETS_ONLY=1
 for x in blmb lyase_1 p450 rvp; do
+		# commented out: non-clustered version
       # output in the right dir
       mkdir $x
       cd $x
@@ -12,7 +13,7 @@ for x in blmb lyase_1 p450 rvp; do
       # get the 10 most diverse sequences as the first seqdump
       t_coffee -reg -thread 4 -seq ~/homfam/combinedSeqs/${x}.fa -nseq 10
 
-		mv $x/seqdump.1 ./${x}.div.fa
+		mv ./seqdump.1 ../${x}.div.fa
 
       cd ..
 done
