@@ -5,12 +5,12 @@ import random
 
 """
 A script that takes a score file in the format used by MSA (Carillo & Lipman), and randomly mutates the scores to produce perturbed alignments.
-The way the alignments are mutated can be configured.
+The way the alignments are mutated can be configured; lines starting with '#' in the input scores are considered comments and re-emitted.
 
 
 """
 
-def mutate_scores(fin, fout, mutator, mutate_gapcost=False, mutate_gapmatchcosts=True):
+def mutate_scores(fin, fout, mutator, mutate_gapcost=False, mutate_gapmatchcosts=False):
     """
     Mutate a scores file.
     `fin` and `fout` describe input and output channels, respectively.
@@ -96,15 +96,38 @@ def make_blosum_scores(fout, blosum=82):
 
 
 if __name__ == '__main__':
-    #import argparse #TODO do some argparsing to configure the perturbation by a script
+    import argparse as ap
+
+    parser = ap.ArgumentParser(description="""
+    MutateScores – mutates your favourite alignment scores beyond recognition
+    """)
+    parser.add_argument("-i", dest='infile', default='-', type=ap.FileType('r'),
+                        help="Input Scores file. Uses the format used by MSA (Carillo & Lipmann) with each line corresponding to one pairing and its score, with the first line containing the gapcost. Default stdin.")
+    parser.add_argument("-o", dest='outfile', default='-', type=ap.FileType('wt'),
+                        help="File to write output scores to. Default stdout.")
+    parser.add_argument("-m", "--mutators", dest='mutators', default="add_mutator([-1, 1], 50);mult_mutator([0.8, 1.2], 30);shuffle_mutator(10)",
+                        help="Mutators to apply to the scores. Takes python expressions separated by ';'. The mutators are applied right-to-left. The constructors defined in this file may be useful to look at. By default, the first mutator shuffles the values with a 10% chance, the second multiplies by 1.2 or 0.8 with a chance of 30%, and the third adds 1 or -1 with a chance of 50%.")
+    parser.add_argument("--mutate-gapcost", dest='mutate_gapcost', action='store_true', default=False,
+                        help="Whether to apply the mutation to the gapcost specified in the first line of the file. Default False.")
+    parser.add_argument("--mutate-gapmatches", dest='mutate_gapmatches', action='store_true', default=False,
+                        help="Whether to apply the mutation to matches between a residue and a gap. Default False.")
+
+    
+    args = parser.parse_args()
+
+    mutator = chain_mutators([eval(mut) for mut in args.mutators.split(';')])
+
+    mutate_scores(args.infile, args.outfile, mutator, mutate_gapcost=args.mutate_gapcost, mutate_gapmatchcosts=args.mutate_gapmatches)
+
+
 
     #mutate_scores(sys.stdin, sys.stdout, add_mutator([-1, 1], 40))
-    with open(sys.argv[1], 'r') as f:
-        mutate_scores(f, sys.stdout,
-                      chain_mutators([
-                          add_mutator([-1, 1], 50),
-                          mult_mutator([0.8, 1.2], 30),
-                          shuffle_mutator(10)
-                          ]))
-        #mutate_scores(f, sys.stdout, add_mutator([-1, 1], 40))
+    #with open(sys.argv[1], 'r') as f:
+    #    mutate_scores(f, sys.stdout,
+    #                  chain_mutators([
+    #                      add_mutator([-1, 1], 50),
+    #                      mult_mutator([0.8, 1.2], 30),
+    #                      shuffle_mutator(10)
+    #                      ]))
+    #    #mutate_scores(f, sys.stdout, add_mutator([-1, 1], 40))
 
