@@ -8,6 +8,8 @@ from .substitutions import *
 import argparse as ap
 import numpy as np
 
+from functools import partial
+
 def main():
 
     parser = ap.ArgumentParser(description="""
@@ -21,6 +23,7 @@ def main():
     parser.add_argument("--id", dest='id', default=None, type=str, help="Sample ID to index the CSV with")
     parser.add_argument("--no-header", dest='header', action='store_false', default=True, help="Emit a CSV without a header")
     parser.add_argument("-p", "--print-matrix", dest='print_matrix', action='store_true', default=False, help="Print the raw matrices caculated by ultramsatric.")
+    parser.add_argument("-s", "--substitutions", dest='subs', required=False, type=ap.FileType('r'), help="Optional input for a substitution scores file, in the format used by MSA. If no file is specified, BLOSUM82 will be used.")
 
     args = parser.parse_args()
 
@@ -33,11 +36,17 @@ def main():
     else:
         args.dist = distmapper[args.dist]
 
+    subs = from_msa_format(args.subs) if args.subs else blosum
+
     m = MSA.from_inputstream(args.infile)
 
-    print(m.totalcol(blosum, linear))
 
-    d = DistMat.from_msa(m, distfun=args.dist)
+    distfun = partial(args.dist, subs=subs)
+    print(subs('A', 'C'), subs('A', 'A'))
+    print(distfun(list("ACC-"), list("CCAT")))
+    print(m.totalcol(distfun, linear))
+    d = DistMat.from_msa(m, distfun=distfun)
+    print(d)
 
     d_upgma = UPGMA_matrix(d)
     d_nj = NJ_matrix(d)

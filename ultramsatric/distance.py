@@ -63,6 +63,7 @@ def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = 
                 continue
 
             ## must be match
+            #print(refch, altch, dist, subs(refch, altch))
             dist += subs(refch, altch)
 
             ## compare the next positions
@@ -99,6 +100,7 @@ def scoredist(ref:List[chr], alt:List[chr], gapcost=no_gaps, subs=blosum) -> flo
     #ev = -23.42 # the code block above computes to this
 
     ev = get_ev(subs)
+    #print(ev)
 
     l = max(len(ref), len(alt)) # get alignment length
 

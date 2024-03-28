@@ -4,6 +4,8 @@ from typing import List, Callable, Dict
 import math
 import itertools
 
+from collections import defaultdict
+
 import blosum as bl
 
 BLOSUM = bl.BLOSUM(62)
@@ -55,6 +57,29 @@ def blosum(ref:chr, alt:chr) -> float:
 
 def pam(ref:chr, alt:chr) -> float:
     return PAM250[ref][alt]
+
+def from_msa_format(fin):
+    """
+    Takes a substitution model in the format used by MSA (Carillo & Lipman),
+    returns a function corresponding to it. Assumes the input to be symmetric, like MSA.
+    Ignores the gapcost specified in the format.
+    Empty lines and lines starting with '#' after the first line are ignored.
+    """
+    lookup = defaultdict(lambda: dict())
+    next(fin)
+    for line in fin:
+        if line.strip() == '' or line[0] == '#': # ignore empty and comment lines
+            continue
+
+        fields = line.strip().split(' ')
+        assert(len(fields) == 3) # check that the format is correct
+
+        if fields[0] <= fields[1]: # enforce lexicalic sorting in the dictionary
+            lookup[fields[0]][fields[1]] = float(fields[2])
+        else: 
+            lookup[fields[1]][fields[0]] = float(fields[2])
+
+    return lambda x, y: lookup[x][y] if x <= y else lookup[y][x]
 
 
 def get_ev(subs: Callable[[chr,chr], float], eqdist: bool = False) -> float:
