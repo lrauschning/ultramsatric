@@ -12,8 +12,9 @@ from .msa import MSA
 from .substitutions import *
 
 
-def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear) -> float:
+def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = identity, gapcost: Callable[[int], float] = linear, match_gaps=False) -> float:
     """This function calculates the alignment distance between `ref` and `alt`, using the specified substitution model `subs` and the gapcost function `gapcost`.
+    `match_gaps` specifies whether to calculate substitution costs between gaps and residues; in that case, `subs` must accept being called with '-' as a gap symbol and a residue.
     :returns: Alignment distance.
     """
     if not len(ref) == len(alt):
@@ -30,9 +31,13 @@ def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = 
             ## check for insertion
             while refch == '-':
                 if altch == '-': # ignore gaps in both sequences
+                    #if match_gaps: # uncomment to allow gap-gap penalties >0
+                    #    dist += subs('-', '-')
                     refch = next(refit)
                     altch = next(altit)
                     continue
+                if match_gaps: # align residue to gap if specified
+                    dist += subs(refch, altch)
                 gaplen += 1
                 refch = next(refit)
             if gaplen > 0:
@@ -43,9 +48,13 @@ def alndist(ref: List[chr], alt: List[chr], subs: Callable[[chr, chr], float] = 
             ## check for deletion
             while altch == '-':
                 if refch == '-': # ignore gaps in both sequences
+                    #if match_gaps: # uncomment to allow gap-gap penalties >0
+                    #    dist += subs('-', '-')
                     refch = next(refit)
                     altch = next(altit)
                     continue
+                if match_gaps: # align residue to gap if specified
+                    dist += subs(refch, altch)
                 gaplen += 1
                 altch = next(altit)
             if gaplen > 0:
