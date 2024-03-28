@@ -1,6 +1,5 @@
 #!/bin/env python3
 
-import sys
 import random
 
 """
@@ -121,6 +120,7 @@ if __name__ == '__main__':
 
 
 
+    #import sys
     #mutate_scores(sys.stdin, sys.stdout, add_mutator([-1, 1], 40))
     #with open(sys.argv[1], 'r') as f:
     #    mutate_scores(f, sys.stdout,
