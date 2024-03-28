@@ -2,4 +2,8 @@
 
 cd diversealn
 
-~/carlip/msa -c ~/ultramsatric/scripts/mutated.scores $1 | ~/ultramsatric/scripts/msatofasta.py $1 > ~/diversealn/$(basename $1 .fa).mut.aln
+bn=$(basename $1 .fa)
+
+# piping seems to fail on long jobs on the cluster, so write the output to a file
+~/carlip/msa -c ~/ultramsatric/scripts/mutated.scores $1 > ~/diversealn/$bn.opt.out
+cat ~/diversealn/$bn.opt.out | ~/ultramsatric/scripts/msatofasta.py $1 > ~/diversealn/$bn.opt.aln.fa
