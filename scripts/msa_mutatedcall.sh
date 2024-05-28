@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name=CARLIP_MSA
-#SBATCH --time=1d-0:00:00
+#SBATCH --time=1-0:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
