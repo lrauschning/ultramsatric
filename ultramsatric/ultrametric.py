@@ -82,7 +82,7 @@ def root_ext_add(d: DistMat) -> DistMat:
 
 def NJ_matrix(d: DistMat) -> DistMat:
     """
-    Quick & Dirty function to get a NJ distance matrix from a distance matrix by calling the UPGMA implementation in dendropy directly.
+    Quick & Dirty function to get a NJ distance matrix from a distance matrix by calling the NJ implementation in dendropy directly.
     Does not use the Tree class.
     """
     tmp = tempfile.NamedTemporaryFile(mode='wt').name + '.tsv'
