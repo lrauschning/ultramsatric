@@ -1,4 +1,5 @@
 #!/bin/sh
+#DEPRECATED
 
 bn=$(basename $1 .fa)
 

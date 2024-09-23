@@ -1,8 +1,8 @@
 #!/bin/sh
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=l.rauschning@campus.lmu.de
-#SBATCH --output=logs/msa-mutated-%j.out
-#SBATCH --error=logs/msa-mutated-%j.err
+#SBATCH --output=logs/msa-%j.out
+#SBATCH --error=logs/msa-%j.err
 #SBATCH --job-name=CARLIP_MSA
 #SBATCH -M biohpc_gen
 #SBATCH --partition=biohpc_gen_production
@@ -14,4 +14,4 @@
 
 bn=$(basename $1 .fa)
 
-~/msa-eval/carlip/msa -c ~/msa-eval/mutated.scores $1 | ~/msa-eval/ultramsatric/scripts/msatofasta.py $1 > ~/msa-eval/diversealn/$bn.mut.aln.fa
+~/msa-eval/carlip/msa -c ~/msa-eval/default.scores $1 | ~/msa-eval/ultramsatric/scripts/msatofasta.py $1 > ~/msa-eval/diversealn/$bn.def.aln.fa
