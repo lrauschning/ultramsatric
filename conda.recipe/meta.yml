@@ -1,0 +1,40 @@
+{% set version = "0.1" %}
+{% set sha256 = "b87705421a2249fd5bb359642494a7f7a9bcbf90a0b73531d1da2d7fedbad396" %} # TO BE ADDED 
+
+package:
+  name: ultramsatric
+  version: {{ version }}
+
+source:
+  url: https://github.com/lrauschning/ultramsatric/archive/v{{ version }}.tar.gz
+  sha256: {{ sha256 }}
+
+build:
+  number: 0
+  script: "{{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt"
+
+requirements:
+  host:
+    - python
+    - setuptools
+    - numpy
+  run:
+    - python
+    - numpy
+    - dendropy
+    - blosum
+
+test:
+  commands:
+    - ultramsatric --version
+
+about:
+  home: https://github.com/lrauschning/ultramsatric
+  license: MIT License
+  license_file: LICENSE
+  summary: MSA Evaluation based on ultrametricity of the closest compatible phylogeny.
+
+extra:
+  maintainers:
+    - lrauschning
+
