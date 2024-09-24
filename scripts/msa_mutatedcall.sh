@@ -14,4 +14,6 @@
 
 bn=$(basename $1 .fa)
 
+echo aligning $1 using mutated scores
+
 ~/msa-eval/carlip/msa -c ~/msa-eval/mutated.scores $1 | ~/msa-eval/ultramsatric/scripts/msatofasta.py $1 > ~/msa-eval/diversealn/$bn.mut.aln.fa
